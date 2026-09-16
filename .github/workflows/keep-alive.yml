@@ -1,0 +1,29 @@
+name: keep-alive
+
+on:
+  schedule:
+    - cron: '0 3 * * *'      # 每天 UTC 03:00 = 北京时间 11:00
+  workflow_dispatch:          # 保留手动触发，方便测试
+
+permissions:
+  contents: write             # 允许用内置 token 推空 commit
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ping Supabase database
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/footprints?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "Supabase responded: $code"
+
+      - name: Empty commit to keep scheduled workflows enabled
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keep-alive [skip ci]"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
