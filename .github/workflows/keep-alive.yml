@@ -16,8 +16,8 @@ jobs:
 
       - name: Ping Supabase database
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/footprints?select=id&limit=1" \
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/footprints?select=*&limit=1" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
           echo "Supabase responded: $code"
 
